@@ -37,6 +37,9 @@ def make_checker(rule):
     # Implement a function that returns a function to determine whether a state meets a
     # rule's requirements. This code runs once, when the rules are constructed before
     # the search is attempted.
+    for key, value in rule.items():
+        print('KEY: ', key)
+        print('VALUE: ', value)
 
     def check(state):
         # This code is called by graph(state) and runs millions of times.
@@ -62,10 +65,12 @@ def make_effector(rule):
 
 def make_goal_checker(goal):
     # Implement a function that returns a function which checks if the state has
-    # met the goal criteria. This code runs once, before the search is attempted.
+    # met the goal criteria. This code runs once, before the search is
+    # attempted.
 
     def is_goal(state):
-        # This code is used in the search process and may be called millions of times.
+        # This code is used in the search process and may be called millions of
+        # times.
         return False
 
     return is_goal
@@ -83,6 +88,7 @@ def graph(state):
 def heuristic(state):
     # Implement your heuristic here!
     return 0
+
 
 def search(graph, state, is_goal, limit, heuristic):
 
@@ -111,14 +117,17 @@ if __name__ == '__main__':
     print('Initial inventory:', Crafting['Initial'])
 
     # List of items needed to be in your inventory at the end of the plan:
-    print('Goal:',Crafting['Goal'])
+    print('Goal:', Crafting['Goal'])
 
     # Dict of crafting recipes (each is a dict):
-    print('Example recipe:','craft stone_pickaxe at bench ->',Crafting['Recipes']['craft stone_pickaxe at bench'])
+    print('Example recipe:', 'craft stone_pickaxe at bench ->',
+          Crafting['Recipes']['craft stone_pickaxe at bench'])
 
     # Build rules
     all_recipes = []
+
     for name, rule in Crafting['Recipes'].items():
+        print(rule)
         checker = make_checker(rule)
         effector = make_effector(rule)
         recipe = Recipe(name, checker, effector, rule['Time'])
@@ -137,5 +146,5 @@ if __name__ == '__main__':
     if resulting_plan:
         # Print resulting plan
         for state, action in resulting_plan:
-            print('\t',state)
+            print('\t', state)
             print(action)
