@@ -1,3 +1,9 @@
+# P5
+#
+# CHARLOTTE KIRBY - 1382261
+# URIAN LEE - 1454351
+#
+
 import json
 from collections import namedtuple, defaultdict, OrderedDict
 from timeit import default_timer as time
@@ -37,13 +43,42 @@ def make_checker(rule):
     # Implement a function that returns a function to determine whether a state meets a
     # rule's requirements. This code runs once, when the rules are constructed before
     # the search is attempted.
-    for key, value in rule.items():
-        print('KEY: ', key)
-        print('VALUE: ', value)
-
     def check(state):
         # This code is called by graph(state) and runs millions of times.
         # Tip: Do something with rule['Consumes'] and rule['Requires'].
+        state_copy = state.copy()
+        # Return false if don't have stuff consumed or required
+        # Otherwise return true
+
+        # Requirements
+        if 'Requires' in rule.keys():
+            req = 1
+            requireables = rule['Requires']
+            for r, q in requireables:
+                # r (required), q (quantity)
+                if r not in state_copy.keys():
+                    return False
+                elif r in state_copy.keys():
+                    quantity = state_copy[r]
+                    if quantity < q:
+                        return False
+                    else:
+                        pass
+
+        # Consumed
+        if 'Consumes' in rule.keys():
+            cons = 1
+            consumables = rule['Consumes']
+            for c, q in consumables:
+                # c (consumed), q (quantity)
+                if c not in state_copy.keys():
+                    return False
+                else:
+                    quantity = state_copy[c]
+                    if quantity < q:
+                        return False
+                    else:
+                        pass
         return True
 
     return check
@@ -56,6 +91,7 @@ def make_effector(rule):
 
     def effect(state):
         # This code is called by graph(state) and runs millions of times
+
         # Tip: Do something with rule['Produces'] and rule['Consumes'].
         next_state = None
         return next_state
@@ -138,7 +174,7 @@ if __name__ == '__main__':
 
     # Initialize first state from initial inventory
     state = State({key: 0 for key in Crafting['Items']})
-    state.update(Crafting['Initial'])
+    state.update(Crafting['Initial'])  # Dictionary to be added to state
 
     # Search for a solution
     resulting_plan = search(graph, state, is_goal, 30, heuristic)
