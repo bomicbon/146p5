@@ -47,12 +47,9 @@ def make_checker(rule):
         # This code is called by graph(state) and runs millions of times.
         # Tip: Do something with rule['Consumes'] and rule['Requires'].
         state_copy = state.copy()
-        # Return false if don't have stuff consumed or required
-        # Otherwise return true
 
-        # Requirements
+        # Return False if state doesn't have what's REQUIRED
         if 'Requires' in rule.keys():
-            req = 1
             requireables = rule['Requires']
             for r, q in requireables:
                 # r (required), q (quantity)
@@ -65,9 +62,8 @@ def make_checker(rule):
                     else:
                         pass
 
-        # Consumed
+        # Return False if state doesn't have what's CONSUMED
         if 'Consumes' in rule.keys():
-            cons = 1
             consumables = rule['Consumes']
             for c, q in consumables:
                 # c (consumed), q (quantity)
@@ -79,6 +75,8 @@ def make_checker(rule):
                         return False
                     else:
                         pass
+
+        # PASSED THE SCREENING - state has the stuff
         return True
 
     return check
