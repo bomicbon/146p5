@@ -65,20 +65,15 @@ def make_checker(rule):
         # Return False if state doesn't have what's CONSUMED
         if 'Consumes' in rule.keys():
             consumables = rule['Consumes']
-            for c, q in consumables:
-                # c (consumed), q (quantity)
+            for c, b in consumables:
+                # c (consumed), b (boolean)
                 if c not in state_copy.keys():
                     return False
                 else:
-                    quantity = state_copy[c]
-                    if quantity < q:
-                        return False
-                    else:
-                        pass
+                    pass
 
         # PASSED THE SCREENING - state has the stuff
         return True
-
     return check
 
 
@@ -89,9 +84,31 @@ def make_effector(rule):
 
     def effect(state):
         # This code is called by graph(state) and runs millions of times
-
         # Tip: Do something with rule['Produces'] and rule['Consumes'].
-        next_state = None
+
+        next_state = state.copy()
+
+        # add PRODUCES to state
+        if 'Produces' in rule.keys():
+            productions = rule['Produces']
+            for p, q in productions:
+                # p (product), q (quantity)
+                if p not in next_state:  # Add Product
+                    next_state.update({p: q})
+                else:  # Update Quantity
+                    nq = next_state[p]
+                    nq += q
+                    next_state.update({p: nq})
+
+        # remove CONSUMES from state
+        if 'Consumes' in rule.keys():
+            consumption = rule['Consumes']
+            for c, q in consumption:
+                # c (consumed), q (quantity)
+                nq = next_state[c]
+                nq -= q
+                next_state.update({p: nq})
+
         return next_state
 
     return effect
@@ -105,7 +122,18 @@ def make_goal_checker(goal):
     def is_goal(state):
         # This code is used in the search process and may be called millions of
         # times.
-        return False
+        state_copy = state.copy()
+        for g, q in goal:
+            # Goal item not obtained
+            if g not in state_copy.keys():
+                return False
+            else:
+                # Goal quantity not reached
+                if state_copy[g] <= q:
+                    return False
+
+        # Screening PASSED. Goal is reached!
+        return True
 
     return is_goal
 
