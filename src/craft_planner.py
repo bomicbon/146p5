@@ -184,10 +184,12 @@ def search(graph, state, is_goal, limit, heuristic):
     # in the path and the action that took you to this state
 
     while time() - start_time < limit and len(queue) is not 0:
+        print(queue)
         rule_name, res_state, rule_cost = heappop(queue)
         res_state_hash = res_state.__hash__()
         popped_baby = (rule_name, res_state, rule_cost)
         if is_goal is True:
+            print("GOTCHA")
             action_path = []
             hashKey = state.__hash__()
             while hashKey is not initial_hash:
@@ -197,12 +199,14 @@ def search(graph, state, is_goal, limit, heuristic):
         # (rule's name, resulting state, cost of rule)
         graph_list = graph(res_state)
         for g in graph_list:
+            #print(g[0])
             g_name = g[0]
             g_state = g[1]
             g_hash = g_state.__hash__()
             g_cost = g[2]
             new_cost = cost_so_far[rule_name] + g_cost  # from current to next
             if g_name not in cost_so_far or new_cost < cost_so_far[g_name]:
+                #print(g_name)
                 cost_so_far[g_name] = new_cost
                 priority = new_cost + heuristic(state)  # (goal, next)
                 came_from[g_hash] = res_state_hash
