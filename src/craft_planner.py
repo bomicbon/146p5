@@ -8,6 +8,7 @@ import json
 from collections import namedtuple, defaultdict, OrderedDict
 from timeit import default_timer as time
 from heapq import heappush, heappop
+from math import inf
 Recipe = namedtuple('Recipe', ['name', 'check', 'effect', 'cost'])
 
 
@@ -160,8 +161,19 @@ def graph(state):
             yield (r.name, r.effect(state), r.cost)
 
 
-def heuristic(state):
-    # Implement your heuristic here!
+def heuristic(state, rule_name):
+    # if we have a tool, no need to search to make another one
+    # crafting a tool will put a space after the term; using it will end the name with that term
+    if "axe " in rule_name and "axe" in state.keys():
+        return float(inf)
+    #inefficient to break this up, but more readable to me...
+    elif "furnace " in rule_name and "furnace" in state.keys():
+        return float(inf)
+    elif "bench " in rule_name and "bench" in state.keys():
+        return float(inf)
+    # don't bother with any iron axe path, there's no benefit over stone axe
+    elif "iron_axe" in state.keys():
+        return float(inf)
     return 0
 
 
@@ -212,7 +224,7 @@ def search(graph, state, is_goal, limit, heuristic):
             print('new_cost: ', new_cost)
             # if g_name not in cost_so_far or new_cost < cost_so_far[g_name]:
             cost_so_far[g_name] = new_cost
-            priority = new_cost + heuristic(state)  # (goal, next)
+            priority = new_cost + heuristic(state, g_name)  # (goal, next)
             came_from[g_hash] = res_state_hash
             action_hash[g_hash] = (g_state, g_name)
             new_baby = (g_name, g_state, priority)
