@@ -1,5 +1,3 @@
-~SUBJECT TO CHANGE, but just to have something down before it gets too late~
-
 Search is done by taking a copy of the current inventory state, looking at what inventory states are accessible from it, prioritizing them based on their time cost and the heuristic, and continuing to look at the next state in the queue until the goal has been reached, at which point the steps are read backwards to determine the full path from the initial state to the goal.
 
 Useful heuristics include:
