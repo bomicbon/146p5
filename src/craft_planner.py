@@ -73,12 +73,16 @@ def make_checker(rule):
         if 'Consumes' in rule.keys():
             consumables = rule['Consumes']
             for c in consumables:
-                b = consumables[c]
-                # c (consumed), b (boolean)
+                q = consumables[c]
+                # c (consumed), q (quantity)
                 if c not in state_copy.keys():
                     return False
                 else:
-                    pass
+                    quantity = state_copy[c]
+                    if quantity < q:
+                        return False
+                    else:
+                        pass
 
         # PASSED THE SCREENING - state has the stuff
         return True
@@ -115,9 +119,7 @@ def make_effector(rule):
             for c in consumption:
                 q = consumption[c]
                 # c (consumed), q (quantity)
-                nq = next_state[c]
-                nq -= q
-                next_state.update({p: nq})
+                next_state[c] -= q
 
         return next_state
 
@@ -166,12 +168,12 @@ def heuristic(state):
 def search(graph, state, is_goal, limit, heuristic):
     start_time = time()
     queue = []  # HEAPQUEUE
-    initial_name = ''
+    initial_name = 'initial'
     initial_state = state
     initial_hash = state.__hash__()
     initial_cost = 0
     initial_baby = (initial_name, initial_state, initial_cost)
-    heappush(queue, initial_baby)  # MIGHT NEED TO SWITCH tuples!!!!
+    heappush(queue, initial_baby)
     came_from = {}
     cost_so_far = {}
     action_hash = {}
@@ -186,7 +188,10 @@ def search(graph, state, is_goal, limit, heuristic):
     while time() - start_time < limit and len(queue) is not 0:
         rule_name, res_state, rule_cost = heappop(queue)
         res_state_hash = res_state.__hash__()
-        popped_baby = (rule_name, res_state, rule_cost)
+        print('')
+        print('NAME: ', rule_name)
+        print('STATE: ', res_state)
+        print('RULE-COST: ', rule_cost)
         if is_goal is True:
             action_path = []
             hashKey = state.__hash__()
@@ -194,6 +199,7 @@ def search(graph, state, is_goal, limit, heuristic):
                 action_path.append(action_hash[hashKey])
                 hashKey = came_from[hashKey]
             return action_path
+
         # (rule's name, resulting state, cost of rule)
         graph_list = graph(res_state)
         for g in graph_list:
@@ -201,14 +207,16 @@ def search(graph, state, is_goal, limit, heuristic):
             g_state = g[1]
             g_hash = g_state.__hash__()
             g_cost = g[2]
+            print('(n,s,c): ', '(',  g_name, ',', g_state, ',', g_cost, ')')
             new_cost = cost_so_far[rule_name] + g_cost  # from current to next
-            if g_name not in cost_so_far or new_cost < cost_so_far[g_name]:
-                cost_so_far[g_name] = new_cost
-                priority = new_cost + heuristic(state)  # (goal, next)
-                came_from[g_hash] = res_state_hash
-                action_hash[g_hash] = (g_state, g_name)
-                new_baby = (g_name, g_state, priority)
-                heappush(queue, new_baby)
+            print('new_cost: ', new_cost)
+            # if g_name not in cost_so_far or new_cost < cost_so_far[g_name]:
+            cost_so_far[g_name] = new_cost
+            priority = new_cost + heuristic(state)  # (goal, next)
+            came_from[g_hash] = res_state_hash
+            action_hash[g_hash] = (g_state, g_name)
+            new_baby = (g_name, g_state, priority)
+            heappush(queue, new_baby)
 
     # Failed to find a path
     print(time() - start_time, 'seconds.')
@@ -251,7 +259,7 @@ if __name__ == '__main__':
     state.update(Crafting['Initial'])  # Dictionary to be added to state
 
     # Search for a solution
-    resulting_plan = search(graph, state, is_goal, 30, heuristic)
+    resulting_plan = search(graph, state, is_goal, 0.1, heuristic)
 
     if resulting_plan:
         # Print resulting plan
