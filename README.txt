@@ -1,0 +1,9 @@
+~SUBJECT TO CHANGE, but just to have something down before it gets too late~
+
+Search is done by taking a copy of the current inventory state, looking at what inventory states are accessible from it, prioritizing them based on their time cost and the heuristic, and continuing to look at the next state in the queue until the goal has been reached, at which point the steps are read backwards to determine the full path from the initial state to the goal.
+
+Useful heuristics include:
+Tools such as axes or the crafting table do not decay and are immediately accessible, so any path involving creating one of these when one is already available will be avoided.
+The iron axe consumes considerably more time and resources than the stone axe for no benefit, so any path involving creating one will be avoided.
+If less than 24 total wood blocks are needed, it is faster to punch them than use the resources on an axe, since axes are not useful for other actions. This involves more work to implement than may be helpful, as determining a path to the goal to count the wood blocks needed is the purpose of the algorithm in the first place.
+If an item is created, and multiple of them are required for the goal, it is faster to create the additional items necessary immediately than exploring other paths and happening upon them the required number of times. This is difficult to implement, however, as actions required to obtain the first instance of an item are not always the same as those for additional instances.
