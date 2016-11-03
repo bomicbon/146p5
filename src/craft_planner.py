@@ -57,7 +57,8 @@ def make_checker(rule):
         # Return False if state doesn't have what's REQUIRED
         if 'Requires' in rule.keys():
             requireables = rule['Requires']
-            for r, q in requireables:
+            for r in requireables:
+                q = requireables[r]
                 # r (required), q (quantity)
                 if r not in state_copy.keys():
                     return False
@@ -71,7 +72,8 @@ def make_checker(rule):
         # Return False if state doesn't have what's CONSUMED
         if 'Consumes' in rule.keys():
             consumables = rule['Consumes']
-            for c, b in consumables:
+            for c in consumables:
+                b = consumables[c]
                 # c (consumed), b (boolean)
                 if c not in state_copy.keys():
                     return False
@@ -97,7 +99,8 @@ def make_effector(rule):
         # add PRODUCES to state
         if 'Produces' in rule.keys():
             productions = rule['Produces']
-            for p, q in productions:
+            for p in productions:
+                q = productions[p]
                 # p (product), q (quantity)
                 if p not in next_state:  # Add Product
                     next_state.update({p: q})
@@ -109,7 +112,8 @@ def make_effector(rule):
         # remove CONSUMES from state
         if 'Consumes' in rule.keys():
             consumption = rule['Consumes']
-            for c, q in consumption:
+            for c in consumption:
+                q = consumption[c]
                 # c (consumed), q (quantity)
                 nq = next_state[c]
                 nq -= q
@@ -129,7 +133,8 @@ def make_goal_checker(goal):
         # This code is used in the search process and may be called millions of
         # times.
         state_copy = state.copy()
-        for g, q in goal:
+        for g in goal:
+            q = goal[g]
             # Goal item not obtained
             if g not in state_copy.keys():
                 return False
@@ -159,60 +164,51 @@ def heuristic(state):
 
 
 def search(graph, state, is_goal, limit, heuristic):
-    print('TESTING')
     start_time = time()
-
-    # frontier = PriorityQueue()
     queue = []  # HEAPQUEUE
-
-    # ----------------- 1 -------------------------------------
-    # MAY BE A PROBLEM HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     initial_name = ''
     initial_state = state
+    initial_hash = state.__hash__()
     initial_cost = 0
     initial_baby = (initial_name, initial_state, initial_cost)
-
-    # ------------------------ 2 ---------------------------------
     heappush(queue, initial_baby)  # MIGHT NEED TO SWITCH tuples!!!!
-
     came_from = {}
     cost_so_far = {}
-    came_from[initial_baby] = None
-    cost_so_far[initial_baby] = 0
+    action_hash = {}
+    came_from[initial_hash] = None
+    cost_so_far[initial_name] = 0
 
     # Implement your search here! Use your heuristic here!
     # When you find a path to the goal return a list of tuples [(state, action)]
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
 
-    # while not frontier.empty():
     while time() - start_time < limit and len(queue) is not 0:
         rule_name, res_state, rule_cost = heappop(queue)
+        res_state_hash = res_state.__hash__()
         popped_baby = (rule_name, res_state, rule_cost)
-        if is_goal:
-            backtracker =
-
-        graph_list = graph()  # (rule's name, resulting state, cost of rule)
+        if is_goal is True:
+            action_path = []
+            hashKey = state.__hash__()
+            while hashKey is not initial_hash:
+                action_path.append(action_hash[hashKey])
+                hashKey = came_from[hashKey]
+            return action_path
+        # (rule's name, resulting state, cost of rule)
+        graph_list = graph(res_state)
         for g in graph_list:
             g_name = g[0]
             g_state = g[1]
+            g_hash = g_state.__hash__()
             g_cost = g[2]
-            # --------------------- 3 -------------------------------
             new_cost = cost_so_far[rule_name] + g_cost  # from current to next
             if g_name not in cost_so_far or new_cost < cost_so_far[g_name]:
                 cost_so_far[g_name] = new_cost
                 priority = new_cost + heuristic(state)  # (goal, next)
+                came_from[g_hash] = res_state_hash
+                action_hash[g_hash] = (g_state, g_name)
                 new_baby = (g_name, g_state, priority)
-                came_from[g_name] = current
                 heappush(queue, new_baby)
-                came_from[g_name] = popped_baby
-        #           new_cost = cost_so_far[current] + graph.cost(current, next)
-        #           if next not in cost_so_far or new_cost < cost_so_far[next]:
-        #                cost_so_far[next] = new_cost
-        #                priority = new_cost + heuristic(goal, next)
-        #                frontier.put(next, priority)
-        #                came_from[next] = current
-        pass
 
     # Failed to find a path
     print(time() - start_time, 'seconds.')
